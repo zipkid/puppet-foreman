@@ -45,6 +45,20 @@ class foreman::config {
   }
 
   if $::foreman::manage_user {
+    if !defined(Group[$foreman::puppet_group]) {
+      group { $foreman::puppet_group:
+        ensure => 'present',
+      }
+    }
+    file { [
+      $foreman::puppet_ssldir,
+      "${foreman::puppet_ssldir}/private_keys",
+      $foreman::client_ssl_ca,
+      $foreman::client_ssl_key,
+      $foreman::client_ssl_cert ]:
+      group  => $foreman::puppet_group,
+      notify => Class['foreman::service'],
+    }
     user { $::foreman::user:
       ensure  => 'present',
       shell   => '/bin/false',
